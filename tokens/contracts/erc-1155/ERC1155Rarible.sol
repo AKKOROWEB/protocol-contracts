@@ -6,7 +6,7 @@ pragma abicoder v2;
 import "./ERC1155Base.sol";
 import "../erc-20/AKKOROSToken.sol";
 
-contract ERC1155Rarible is ERC1155Base,AKKOROSToken {
+contract ERC1155Rarible is ERC1155Base, AKKOROSToken {
     /// @dev true if collection is private, false if public
     bool isPrivate;
     bool set_erc = false;
@@ -80,7 +80,7 @@ contract ERC1155Rarible is ERC1155Base,AKKOROSToken {
         __RoyaltiesV2Upgradeable_init_unchained();
         __ERC1155Base_init_unchained(_name, _symbol);
         _setBaseURI(baseURI);
-        ERC20_init(this.address);
+        ERC20_init(address(this));
 
         //setting default approver for transferProxies
         _setDefaultApproval(transferProxy, true);
@@ -103,10 +103,13 @@ contract ERC1155Rarible is ERC1155Base,AKKOROSToken {
         super.reward(sender, 1);
     }
 
-    function setERC20(address _ERC20) public override {
-        require(!set_erc);
-        ERC20 = _ERC20;
-        set_erc = true;
+    function burn(
+        address account,
+        uint256 id,
+        uint256 value
+    ) public override {
+        super.burn;
+        super.destroy(value);
     }
 
     uint256[49] private __gap;

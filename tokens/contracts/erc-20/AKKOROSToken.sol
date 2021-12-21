@@ -7,14 +7,14 @@ import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ER20Upgradeable.sol";
 
-contract AKKOROSToken is ERC20Upgradeable,ERC20Burnable {
+contract AKKOROSToken is ERC20Upgradeable {
     public minting_contract;
     function ERC20_init(address _minting_contract) internal initializer {
         __ERC20_init("Akkoros Token", "AKTK");
         minting_contract = _minting_contract;
     }
 
-    // Reward
+    // Rewards the creator
 
     function reward(address _to, uint256 _amount) public {
         require(_amount > 0);
@@ -28,7 +28,7 @@ contract AKKOROSToken is ERC20Upgradeable,ERC20Burnable {
      *
      * See {ERC20-_burn}.
      */
-    function burn(uint256 amount) public virtual {
+    function destroy(uint256 amount) public virtual {
         super._burn(_msgSender(), amount);
     }
 
