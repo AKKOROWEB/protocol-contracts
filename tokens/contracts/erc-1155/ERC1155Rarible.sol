@@ -4,32 +4,71 @@ pragma solidity 0.7.6;
 pragma abicoder v2;
 
 import "./ERC1155Base.sol";
+import "../erc-20/AKKOROSToken.sol";
 
-contract ERC1155Rarible is ERC1155Base {
+contract ERC1155Rarible is ERC1155Base,AKKOROSToken {
     /// @dev true if collection is private, false if public
     bool isPrivate;
+    bool set_erc = false;
+    address ERC20;
 
     event CreateERC1155Rarible(address owner, string name, string symbol);
     event CreateERC1155RaribleUser(address owner, string name, string symbol);
 
-    function __ERC1155RaribleUser_init(string memory _name, string memory _symbol, string memory baseURI, string memory contractURI, address[] memory operators, address transferProxy, address lazyTransferProxy) external initializer {
-        __ERC1155Rarible_init_unchained(_name, _symbol, baseURI, contractURI, transferProxy, lazyTransferProxy);
-        for(uint i = 0; i < operators.length; i++) {
+    function __ERC1155RaribleUser_init(
+        string memory _name,
+        string memory _symbol,
+        string memory baseURI,
+        string memory contractURI,
+        address[] memory operators,
+        address transferProxy,
+        address lazyTransferProxy
+    ) external initializer {
+        __ERC1155Rarible_init_unchained(
+            _name,
+            _symbol,
+            baseURI,
+            contractURI,
+            transferProxy,
+            lazyTransferProxy
+        );
+        for (uint256 i = 0; i < operators.length; i++) {
             setApprovalForAll(operators[i], true);
         }
 
         isPrivate = true;
         emit CreateERC1155RaribleUser(_msgSender(), _name, _symbol);
     }
-    
-    function __ERC1155Rarible_init(string memory _name, string memory _symbol, string memory baseURI, string memory contractURI, address transferProxy, address lazyTransferProxy) external initializer {
-        __ERC1155Rarible_init_unchained(_name, _symbol, baseURI, contractURI, transferProxy, lazyTransferProxy);
+
+    function __ERC1155Rarible_init(
+        string memory _name,
+        string memory _symbol,
+        string memory baseURI,
+        string memory contractURI,
+        address transferProxy,
+        address lazyTransferProxy
+    ) external initializer {
+        __ERC1155Rarible_init_unchained(
+            _name,
+            _symbol,
+            baseURI,
+            contractURI,
+            transferProxy,
+            lazyTransferProxy
+        );
 
         isPrivate = false;
         emit CreateERC1155Rarible(_msgSender(), _name, _symbol);
     }
 
-    function __ERC1155Rarible_init_unchained(string memory _name, string memory _symbol, string memory baseURI, string memory contractURI, address transferProxy, address lazyTransferProxy) internal {
+    function __ERC1155Rarible_init_unchained(
+        string memory _name,
+        string memory _symbol,
+        string memory baseURI,
+        string memory contractURI,
+        address transferProxy,
+        address lazyTransferProxy
+    ) internal {
         __Ownable_init_unchained();
         __ERC1155Lazy_init_unchained();
         __ERC165_init_unchained();
@@ -41,17 +80,33 @@ contract ERC1155Rarible is ERC1155Base {
         __RoyaltiesV2Upgradeable_init_unchained();
         __ERC1155Base_init_unchained(_name, _symbol);
         _setBaseURI(baseURI);
+        ERC20_init(this.address);
 
         //setting default approver for transferProxies
         _setDefaultApproval(transferProxy, true);
         _setDefaultApproval(lazyTransferProxy, true);
     }
 
-    function mintAndTransfer(LibERC1155LazyMint.Mint1155Data memory data, address to, uint256 _amount) public override {
-        if (isPrivate){
-          require(owner() == data.creators[0].account, "minter is not the owner");
+    function mintAndTransfer(
+        LibERC1155LazyMint.Mint1155Data memory data,
+        address to,
+        uint256 _amount
+    ) public override {
+        address sender = _msgSender();
+        if (isPrivate) {
+            require(
+                owner() == data.creators[0].account,
+                "minter is not the owner"
+            );
         }
         super.mintAndTransfer(data, to, _amount);
+        super.reward(sender, 1);
+    }
+
+    function setERC20(address _ERC20) public override {
+        require(!set_erc);
+        ERC20 = _ERC20;
+        set_erc = true;
     }
 
     uint256[49] private __gap;
